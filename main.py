@@ -19,6 +19,7 @@ SPRITE_SCALING_PLAYER = 0.5
 SPRITE_SCALING_COIN = .25
 COIN_COUNT = 50
 BARRIER_COUNT = 20
+LIFE_COUNT = 3
 
 SCREEN_WIDTH = 1500
 SCREEN_HEIGHT = 500
@@ -37,6 +38,7 @@ class MyGame(arcade.Window):
             self.player_list = None
             self.coin_list = None
             self.barrier_list = None
+            self.life_list = None
 
             # Set up the player info
             self.player_sprite = None
@@ -54,9 +56,10 @@ class MyGame(arcade.Window):
             self.player_list = arcade.SpriteList()
             self.coin_list = arcade.SpriteList()
             self.barrier_list = arcade.SpriteList()
+            self.life_list = arcade.SpriteList()
             # Score
             self.score = 0
-
+            self.lives = 3
             # Set up the player
             # Character image from kenney.nl
             img = ":resources:images/animated_characters/female_person/femalePerson_idle.png"
@@ -87,18 +90,28 @@ class MyGame(arcade.Window):
 
                 self.barrier_list.append(barrier)
 
+            for i in range(LIFE_COUNT):
+                live = arcade.Sprite("imagenes/corazon.png",
+                                        SPRITE_SCALING_COIN*10)
+                live.center_x = random.randrange(SCREEN_WIDTH)
+                live.center_y = random.randrange(SCREEN_HEIGHT)
+
+                self.life_list.append(live)
         def on_draw(self):
             """ Draw everything """
             self.clear()
             self.coin_list.draw()
             self.barrier_list.draw()
+            self.life_list.draw()
             self.player_list.draw()
 
             # Put the text on the screen.
             output = f"Score: {self.score}"
             arcade.draw_text(text=output, start_x=10, start_y=20,
                              color=arcade.color.WHITE, font_size=14)
-
+            lives = f"lives: {self.lives}"
+            arcade.draw_text(text=lives, start_x=10, start_y=40,
+                             color=arcade.color.WHITE, font_size=14)
         def on_mouse_motion(self, x, y, dx, dy):
             """ Handle Mouse Motion """
 
@@ -114,15 +127,18 @@ class MyGame(arcade.Window):
                                                                   self.coin_list)
             barrier_hit_list = arcade.check_for_collision_with_list(self.player_sprite,
                                                                     self.barrier_list)
-
+            life_hit_list = arcade.check_for_collision_with_list(self.player_sprite,
+                                                                 self.life_list)
             # Loop through each colliding sprite, remove it, and add to the score.
             for coin in coins_hit_list:
                 coin.remove_from_sprite_lists()
                 self.score += 1
             for barrier in barrier_hit_list:
                 barrier.remove_from_sprite_lists()
-                self.score -= 1
-
+                self.lives -= 1
+            for live in life_hit_list:
+                live.remove_from_sprite_lists()
+                self.lives = 3
 def main():
     """ Main function """
     window = MyGame()
